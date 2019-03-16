@@ -1,69 +1,25 @@
-# tutorial
-# https://www.programiz.com/python-programming/generator
-# https://realpython.com/introduction-to-python-generators/
-
-
-# simple generator
-def my_gen():
-    n = 1
-    print("first print")
-    yield n
-
-    n += 1
-    print("second print")
-    yield n
-
-    n += 1
-    print("third print")
-    yield n
-
-tmp = my_gen()  # return iterator object without any execution
-type(tmp)
-
-next(tmp)
-
-
-# combine generator and for loop
-for item in my_gen():
-    print(item)
-
-
-# for loop embeded in generator
-def my_gen2(n):
-    for i in range(n):
-        yield i
-
-tmp = my_gen2(10)
-
-next(tmp)
-
-
-# generator expression
-a = list(range(10))
-
-b = [x**2 for x in a]
-print(b)
-
-c = (x**2 for x in a)
-print(c)
-
-for item in c:
-    print(item)
-
+# coding = utf8
 
 import time
+import sys
 
-s = list(range(100000000))
+# 列表推导(list comprehension) vs 生成器表达式(generator expression)
+# 列表推导会创建一个新的列表，当需要遍历的对象比较小时不存在任何问题，但
+# 如果输入参数非常大，列表推导会占用大量内存，甚至引起程序崩溃
 
-t0 = time.time()
-tmp = [x for x in s if x % 2 == 0]
-print(sum(tmp))
-t1 = time.time()
-print("time: %.2f seconds" % (t1 - t0))
+# 案例：创建一个包含100万个数字的列表，计算所有数字的平方，最后求和
+# 观察列表推导对内存的占用
 
-t0 = time.time()
-tmp = (x for x in s if x % 2 == 0)
-print(sum(tmp))
-t1 = time.time()
-print("time: %.2f seconds" % (t1 - t0))
+def test_list_comprehension(arr):
+    print("size of original array: %s" % sys.getsizeof(arr))
+    even_num = [x**2 for x in arr]
+    print("size of new list: %s" % sys.getsizeof(even_num))
+
+
+if __name__ == "__main__":
+
+    arr = list(range(1000000))
+    test_list_comprehension(arr)
+
+
 
