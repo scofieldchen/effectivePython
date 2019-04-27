@@ -3,7 +3,6 @@ threading.Lock
 """
 
 import time
-import random
 import threading
 import logging
 
@@ -14,32 +13,34 @@ logging.basicConfig(
 )
 
 
-"""
-创建全局变量l(list)，启动子线程，不断往里边增加数字，
-主线程则负责计算l中数字之和。
-"""
-
-l = []
-
-def worker(l):
-    for _ in range(100):
-        time.sleep(random.random())
-        l.append(1)
-        logging.info(str(l))
-
-if __name__ == "__main__":
+class Counter:
+    def __init__(self):
+        self.value = 0
     
-    t = threading.Thread(name="child", target=worker, args=(l,))
-    t.start()
+    def increment(self, offset):
+        self.value += offset
+
+
+def worker(how_many, counter):
+    for _ in range(how_many):
+        logging.info("counter = %d" % counter.value)
+        counter.increment(1)
+
+
+def run_threads(how_many, counter):
+    threads = []
+    for i in range(5):
+        t = threading.Thread(name="thread%d" % i, target=worker, 
+                             args=(how_many, counter))
+        threads.append(t)
+        t.start()
     
-    lock = threading.Lock()
-    for _ in range(100):
-        time.sleep(random.random())
-        try:
-            lock.acquire()
-            logging.info("lock acquired")
-            logging.info("sum = %d" % sum(l))
-        finally:
-            lock.release()
-            logging.info("release lock")
+    for t in threads:
+        t.join()
+
+
+counter = Counter()
+how_many = 500000
+run_threads(how_many, counter)
+
 
