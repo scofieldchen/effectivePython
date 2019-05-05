@@ -1,20 +1,7 @@
-"""
-多线程之间的通信非常复杂，python提供了简单的实现机制threading.Event,
-多个线程可以一直等待某个事件发生，然后同时开始工作。
-
-1个Event对象管理1个内部标识符(internal flag)，它取值True或False, 实例化
-事件对象标识符默认为False。
-
-Event对象有3个核心方法：
-1. set ==> 将标识符设置为True
-2. clear ==> 将标识符设置为False
-3. wait ==> 阻碍线程直到标识符变为True
-通过这3个方法实现多个线程之间的通信，可以理解为线程间的条件变量(if/then)。
-"""
-
 import time
-from threading import Thread, Event
+import random
 import logging
+from threading import Thread, Event
 
 
 logging.basicConfig(
@@ -23,19 +10,55 @@ logging.basicConfig(
 )
 
 
-def worker(e):
-    # e: threading.Event对象
-    is_set = e.wait()
-    logging.info("event is set: %s" % str(is_set))
-    logging.info("doing work")
+def trading():
+    while True:
+        pause = random.randint(5, 10)
+        time.sleep(pause)
+        logging.info("wait for monitor to finish")
+        e_monitor.wait()  # 阻碍该线程直到monitor结束
+        logging.info("monitor is over")
+        e_trade.clear()
+        logging.info("place orders randomly")
+        e_trade.set()
 
 
-e = Event()
+def depth():
+    while True:
+        pause = random.randint(2, 5)
+        time.sleep(pause)
+        logging.info("wait for monitor to finish")
+        e_monitor.wait()  # 阻碍该线程直到monitor结束
+        logging.info("monitor is over")
+        e_depth.clear()
+        logging.info("place and cancel limit orders")
+        e_depth.set()
 
-t = Thread(name="threadA", target=worker, args=(e,))
-t.start()
 
-time.sleep(10)
-e.set()
+def monitor():
+    while True:
+        time.sleep(1)
+        e_trade.wait()
+        e_depth.wait()
+        logging.info("trade and depth not running")
+        e_monitor.clear()
+        logging.info("monitor order flow")
+        e_monitor.set()
 
 
+if __name__ == "__main__":
+
+    e_trade = Event()
+    e_depth = Event()
+    e_monitor = Event()
+
+    e_trade.set()
+    e_depth.set()
+    e_monitor.set()
+
+    t1 = Thread(name="trade", target=trading)
+    t2 = Thread(name="depth", target=depth)
+    t3 = Thread(name="monitor", target=monitor)
+
+    t1.start()
+    t2.start()
+    t3.start()
