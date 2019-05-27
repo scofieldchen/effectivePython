@@ -2,7 +2,7 @@
 线程池(threadPool)提供管理多个线程的自动化方案，当需要执行多个IO任务时
 非常有用，它不需要程序员分别管理单个线程。
 
-concurrent.futures提供ThreadPoolExecutor类，我们将用它实现线程池。
+concurrent.futures提供ThreadPoolExecutor类，这是实现线程池的最优方法。
 
 参考教程：https://www.tutorialspoint.com/concurrency_in_python/concurrency_in_python_pool_of_threads.htm
 """
