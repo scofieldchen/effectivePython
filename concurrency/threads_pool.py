@@ -3,8 +3,6 @@
 非常有用，它不需要程序员分别管理单个线程。
 
 concurrent.futures提供ThreadPoolExecutor类，这是实现线程池的最优方法。
-
-参考教程：https://www.tutorialspoint.com/concurrency_in_python/concurrency_in_python_pool_of_threads.htm
 """
 
 from concurrent.futures import ThreadPoolExecutor,as_completed
