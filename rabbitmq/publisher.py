@@ -1,4 +1,7 @@
+import time
+import json
 import pika
+from config import config
 
 
 class Publisher:
@@ -14,7 +17,7 @@ class Publisher:
         parameters = pika.ConnectionParameters(
             host=self.config["host"],
             port=self.config["port"],
-            virtual_host=self.config["virtualHost"],  # 包含交换机和队列的虚拟机名称
+            virtual_host=self.config["virtualHost"],
             credentials=credentials
         )
         return pika.BlockingConnection(parameters)
@@ -24,19 +27,19 @@ class Publisher:
             connection = self._create_connection()
             channel = connection.channel()
 
-            # 声明交换机，并不真正创建交换机
-            # 创建交换机的逻辑在接受消息的类中实现
-            # 如果没有对应的Consumer，在Publisher中创建交换机是没有意义的
+            # 声明交换机，若交换机不存在引发异常
+            # 创建交换机的逻辑在消费者程序中实现
+            # 如果没有对应的消费者，生产者创建交换机是没有意义的
             channel.exchange_declare(
                 exchange=self.config["exchangeName"],
-                passive=True
+                passive=True  # 仅检测交换机是否存在
             )
             channel.basic_publish(
                 exchange=self.config["exchangeName"],
                 routing_key=self.config["routingKey"],
                 body=message
             )
-            print(" [x] Sent message %r" % message)
+            print("Sent message %r" % message)
         except Exception as e:
             print(e)
         finally:
@@ -44,15 +47,11 @@ class Publisher:
                 connection.close()
 
 
-config = {
-    "username": "scofield",
-    "password": "kingchen1990",
-    "host": "localhost",
-    "port": 5672,
-    "virtualHost": "test",
-    "exchangeName": "testExchange",
-    "routingKey": "testQueue"
-}
+if __name__ == "__main__":
 
+    p = Publisher(config)
 
-        
+    while True:
+        time.sleep(3)
+        msg = json.dumps({"name": "scofield", "age": 18})
+        p.publish(msg)
