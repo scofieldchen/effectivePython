@@ -3,13 +3,21 @@ import signal
 import subprocess
 import time
 import json
+from threading import Thread
 from queue import Queue
 from pprint import pprint
+import logging
 
 import pika
 
 from config import config
 from consumer import Consumer
+
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(threadName)s - %(levelname)s - %(message)s"
+)
 
 
 class Signal:
@@ -26,33 +34,47 @@ class Signal:
         self._queue = queue
 
     def process_msg(self, message):
-        """回调函数，处理消息的逻辑"""
+        """回调函数，处理消息的逻辑
+        
+        message的格式定义为:{
+            "action": 'start' or 'stop',
+            "exchange": 'exchangeName',
+            "account": 'accountName',
+            "symbol": 'AAA/BBB',
+            "params": {
+                "param1": 'value',
+                ...
+                "paramk": 'value'
+            }
+        }
+        """
         data = json.loads(message)
-        pprint(data)
-        self._queue.put(data)
+        try:
+            action = data["action"]
+            robot = Robot(
+                exchange=data["exchange"],
+                account=data["account"],
+                symbol=data["symbol"],
+                params=data["params"]
+            )
+            self._queue.put((action, robot))
+        except Exception as e:
+            logging.error("failed to get message, error = %s" % e)
     
     def consume(self):
         """消费实时消息"""
-
-        # TO-DO: 处理处理异常？出现异常后是否重新连接？
-        
         with self._consumer as consumer:
             consumer.consume(self.process_msg)
-
-
-# _queue = Queue()
-# signal = Signal(config, _queue)
-# signal.consume()
 
 
 class Robot:
     """机器人实例"""
 
-    def __init__(self, exchange, account, symbol, **kwargs):
+    def __init__(self, exchange, account, symbol, params={}):
         self.exchange = exchange.lower()
         self.account = account.lower()
         self.symbol = symbol.replace("/", "").lower()
-        self.params = kwargs
+        self.params = params
 
         self.id = "_".join([self.exchange, self.account, self.symbol])
         self.pid = None
@@ -82,8 +104,13 @@ class Robot:
     def start(self, cmd):
         """启动机器人
         
+        TODO: 设置环境和工作目录
+
         Args:
             cmd(str): 终端命令
+        
+        Returns:
+            bool: True表示成功启动，False表示启动失败
         """
         # 将os.setsid()传递给preexec_fn，把shell ID作为整个进程组的父ID
         # 这样一来就能把所有子进程全部关闭
@@ -91,32 +118,79 @@ class Robot:
         self.pid = proc.pid  # 不管Popen是否成功，都会返回pid
         time.sleep(0.2)
         if self.is_alive():
-            print("robot is running, pid = %d" % self.pid)
+            logging.info("%s: start running" % str(self))
+            return True
         else:
-            print("failed to start robot")
+            self.pid = None
+            logging.error("%s: failed to start" % str(self))
+            return False
 
     def stop(self):
         """关闭机器人"""
         try:
             os.killpg(os.getpgid(self.pid), signal.SIGTERM)
+            logging.info("%s: stop running" % str(self))
+            return True
         except Exception as e:
-            print("failed to terminate robot, error = %s" % e)
-        else:
-            self.pid = None
+            logging.error("%s: failed to terminate, error = %s" % (str(self), e))
+            return False
 
 
-robot1 = Robot("fcoin", "test123", "ETH/USDT")
-# robot2 = Robot("instantex", "test456", "ETH/USDT")
-# robot3 = Robot("fcoin", "test456", "ETH/BTC")
-# robots = [robot1, robot2, robot3]
+class RobotManagement:
+    """管理所有机器人实例"""
 
-robot1.start("python test_script.py")
+    def __init__(self):
+        self._queue = Queue()
+        self._signal = Signal(config, self._queue)
+        self.signals = []  # 推送的最新信号
+        self.robots = []  # 正在运行的机器人实例
 
-cnt = 0
-while cnt < 30:
-    print("robot running: ", robot1.is_alive())
-    cnt += 1
-    time.sleep(1)
+    def recieve_signals(self):
+        """从队列中取出信号"""
+        cnt = 0
+        while not self._queue.empty():
+            signal = self._queue.get()
+            self.signals.append(signal)
+            cnt += 1
+        logging.info("recieve %d signals" % cnt)
+    
+    def handle_signals(self):
+        """根据信号启动/关闭机器人"""
+        for action, robot in self.signals:
+            if action == "start":
+                if robot in self.robots:
+                    logging.info("%s: already running" % str(robot))
+                else:
+                    res = robot.start("python test_script.py")
+                    if res:
+                        self.robots.append(robot)
+            else:
+                if robot in self.robots:
+                    res = robot.stop()
+                    if res:
+                        self.robots.remove(robot)
+                else:
+                    logging.info("%s: robot not running" % str(robot))
+        self.signals.clear()
 
-print("terminate robot")
-robot1.stop()
+    def check_robots(self):
+        """检查机器人运行状态"""
+        pass
+
+    def run(self, interval=1):
+        """主程序"""
+        # 在子线程中监听信号
+        t = Thread(target=self._signal.consume)
+        t.start()
+        time.sleep(1)
+
+        # 在主线程中管理机器人
+        while True:
+            self.recieve_signals()
+            self.handle_signals()
+            time.sleep(interval)
+
+
+if __name__ == "__main__":
+    rm = RobotManagement()
+    rm.run(interval=1)
