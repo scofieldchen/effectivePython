@@ -11,8 +11,6 @@ logging.basicConfig(
 
 
 if __name__ == "__main__":
-    cnt = 0
-    while cnt < 20:
+    while True:
         logging.info("script running")
-        cnt += 1
         time.sleep(1)

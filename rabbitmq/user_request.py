@@ -19,7 +19,7 @@ param2 = [6, 7, 8, 9, 10]
 ## 发送消息，内容随机，模拟用户请求的过程
 p = Publisher(config)
 while True:
-    time.sleep(random.randint(20, 30))
+    time.sleep(random.randint(2,5))
     request = {
         "action": random.sample(actions, k=1)[0],
         "exchange": random.sample(exchanges, k=1)[0],

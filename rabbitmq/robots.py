@@ -118,22 +118,19 @@ class Robot:
         self.pid = proc.pid  # 不管Popen是否成功，都会返回pid
         time.sleep(0.2)
         if self.is_alive():
-            logging.info("%s: start running" % str(self))
             return True
         else:
-            self.pid = None
-            logging.error("%s: failed to start" % str(self))
             return False
 
     def stop(self):
         """关闭机器人"""
         try:
             os.killpg(os.getpgid(self.pid), signal.SIGTERM)
-            logging.info("%s: stop running" % str(self))
-            return True
         except Exception as e:
-            logging.error("%s: failed to terminate, error = %s" % (str(self), e))
+            logging.error(e)
             return False
+        else:
+            return True
 
 
 class RobotManagement:
@@ -157,20 +154,25 @@ class RobotManagement:
     def handle_signals(self):
         """根据信号启动/关闭机器人"""
         for action, robot in self.signals:
-            if action == "start":
-                if robot in self.robots:
+            if action == "start":  # 启动机器人
+                if robot in self.robots:  # 已经启动
                     logging.info("%s: already running" % str(robot))
-                else:
+                else:  # 未启动
                     res = robot.start("python test_script.py")
                     if res:
+                        logging.info("%s: start running" % str(robot))
                         self.robots.append(robot)
-            else:
-                if robot in self.robots:
-                    res = robot.stop()
-                    if res:
-                        self.robots.remove(robot)
+            else:  # 关闭机器人
+                for bot in self.robots:
+                    if bot == robot:  # 已经启动
+                        res = bot.stop()
+                        if res:
+                            logging.info("%s: stop running" % str(bot))
+                            self.robots.remove(bot)
+                            break
                 else:
-                    logging.info("%s: robot not running" % str(robot))
+                    logging.info("%s: robot not running, invalid stop signal" % \
+                        str(robot))
         self.signals.clear()
 
     def check_robots(self):
@@ -188,6 +190,7 @@ class RobotManagement:
         while True:
             self.recieve_signals()
             self.handle_signals()
+            print(self.robots)
             time.sleep(interval)
 
 
