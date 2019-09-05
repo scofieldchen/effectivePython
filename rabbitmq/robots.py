@@ -1,18 +1,20 @@
+import json
+import logging
 import os
 import signal
 import subprocess
 import time
-import json
-from threading import Thread
-from queue import Queue
+from datetime import datetime
 from pprint import pprint
-import logging
+from queue import Queue
+from threading import Thread
 
 import pika
+import pymongo
+from pymongo import MongoClient
 
-from config import config
+import config
 from consumer import Consumer
-
 
 logging.basicConfig(
     level=logging.INFO,
@@ -36,7 +38,8 @@ class Signal:
     def process_msg(self, message):
         """回调函数，处理消息的逻辑
         
-        message的格式定义为:{
+        message格式:
+        {
             "action": 'start' or 'stop',
             "exchange": 'exchangeName',
             "account": 'accountName',
@@ -78,6 +81,8 @@ class Robot:
 
         self.id = "_".join([self.exchange, self.account, self.symbol])
         self.pid = None
+        self.last_start_time = None
+        self.last_stop_time = None
 
     def __str__(self):
         return "Robot(%s)" % self.id
@@ -118,6 +123,7 @@ class Robot:
         self.pid = proc.pid  # 不管Popen是否成功，都会返回pid
         time.sleep(0.2)
         if self.is_alive():
+            self.last_start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             return True
         else:
             return False
@@ -130,7 +136,79 @@ class Robot:
             logging.error(e)
             return False
         else:
+            self.last_stop_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             return True
+
+
+class RobotRecord:
+    """记录运行的机器人实例的信息
+    
+    Attributes:
+        config(dict): mongodb配置信息
+        {
+            "host": 终端，
+            "port": 端口，
+            "db": 数据库名字
+            "collection": 存储数据的表格
+        }
+    """
+
+    def __init__(self, config):
+        self.client = MongoClient(config["host"], config["port"])
+        self.db = self.client[config["db"]]
+        self.collection = self.db[config["collection"]]
+
+    def save_robot(self, robot):
+        """将机器人实例的数据存储到数据库
+        
+        Args:
+            robot(Robot): Robot类的实例
+        """
+        doc = vars(robot)
+        self.collection.insert_one(doc)
+        
+    def get_robot(self, id):
+        """读取机器人实例的数据
+
+        Args:
+            id(str): 机器人ID，格式为'exchange_account_symbol'
+
+        Returns:
+            若能找到机器人记录，返回Robot对象，否则返回None
+        """
+        res = self.collection.find_one({"id": id})
+        if res is not None:
+            robot = Robot(
+                exchange=res["exchange"],
+                account=res["account"],
+                symbol=res["symbol"],
+                params=res["params"]
+            )
+            robot.pid = res["pid"]
+            robot.last_start_time = res["last_start_time"]
+            robot.last_stop_time = res["last_stop_time"]
+            return robot
+
+    def update_robot(self, robot):
+        """更新机器人实例的数据"""
+        query = {"id": robot.id}
+        new_values = {
+            "$set": {
+                "pid": robot.pid,
+                "last_start_time": robot.last_start_time,
+                "last_stop_time": robot.last_stop_time,
+                "params": robot.params
+            }
+        }
+        self.collection.update_one(query, new_values)
+
+    def remove_robot(self, id):
+        """删除机器人实例的数据"""
+        self.collection.delete_one({"id": id})
+
+    def get_robots(self):
+        """读取正在运行的所有机器人实例的数据"""
+        pass
 
 
 class RobotManagement:
@@ -194,6 +272,6 @@ class RobotManagement:
             time.sleep(interval)
 
 
-if __name__ == "__main__":
-    rm = RobotManagement()
-    rm.run(interval=1)
+# if __name__ == "__main__":
+#     rm = RobotManagement()
+#     rm.run(interval=1)

@@ -1,5 +1,5 @@
 # RabbitMQ配置
-config = {
+RABBIT = {
     # 身份认证
     "username": "guest",
     "password": "guest",
@@ -30,4 +30,13 @@ config = {
     
     # 路由关键字
     "routingKey": "testKey"          # 交换机到队列的映射规则
+}
+
+
+# mongodb配置
+MONGODB = {
+    "host": "localhost",
+    "port": 27017,
+    "db": "marketmaking",
+    "collection": "robots"
 }
