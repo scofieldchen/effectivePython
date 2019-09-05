@@ -4,7 +4,7 @@ import random
 
 import pika
 
-from config import config
+import config
 from publisher import Publisher
 
 
@@ -17,7 +17,7 @@ param1 = [1, 2, 3, 4, 5]
 param2 = [6, 7, 8, 9, 10]
 
 ## 发送消息，内容随机，模拟用户请求的过程
-p = Publisher(config)
+p = Publisher(config.RABBIT)
 while True:
     time.sleep(random.randint(2,5))
     request = {
