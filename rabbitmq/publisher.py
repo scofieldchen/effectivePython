@@ -1,7 +1,7 @@
 import time
 import json
 import pika
-from config import config
+import config
 
 
 class Publisher:
@@ -49,7 +49,7 @@ class Publisher:
 
 if __name__ == "__main__":
 
-    p = Publisher(config)
+    p = Publisher(config.RABBIT)
 
     while True:
         time.sleep(3)

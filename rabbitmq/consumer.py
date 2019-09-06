@@ -1,6 +1,6 @@
 import json
 import pika
-from config import config
+import config
 
 
 class Consumer:
@@ -81,5 +81,5 @@ if __name__ == "__main__":
         data = json.loads(msg)
         print(data)
 
-    with Consumer(config) as consumer:
+    with Consumer(config.RABBIT) as consumer:
         consumer.consume(process_msg)
