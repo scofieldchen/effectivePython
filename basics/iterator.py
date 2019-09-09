@@ -35,15 +35,15 @@ next(iterator)  # 迭代器没有元素后调用next()会引发'StopIteration'�
 ## step2: 不断调用next()返回下一个元素
 ## step3: 耗尽所有元素后处理StopIteration异常
 
-
 def custom_loop(iterable, callback):
     """利用迭代器遍历可迭代对象
+    iterable: 可迭代对象，如列表，元组，字典等
     callback: 处理元素的函数
     """
-    # 用iter()创建一个迭代器
+    # 用iter()创建迭代器
     iterator = iter(iterable)
-
-    # 不断调用next()从迭代器中取出元素，穷尽所有元素后退出
+    
+    # 调用next()逐个取出元素，最后处理StopIteration异常
     while True:
         try:
             item = next(iterator)
@@ -85,6 +85,7 @@ class GenerateNumber:
 
 numbers = GenerateNumber(0, 3)
 type(numbers)
+
 next(numbers)
 
 list(GenerateNumber(1, 10))
@@ -93,10 +94,11 @@ for i in GenerateNumber(1,5):
     print(i)
 
 
-## 生成器(Generator)和生成器表达式(Generator Expression)
-
-## 生成器：包含yield关键字的函数，负责‘生产’一系列的值，这些值可以用循环来遍历，
-## 也可以用next()取出
+## ----------------------------------------------------------- ##
+## 生成器(Generator), 生成器表达式(Generator Expression)
+# 生成器：包含yield关键字的函数，负责‘生产’一系列的值，这些值可以用循环来遍历，也可以用next()取出
+# 生成器表达式：语法与列表推导类似，用'()'而不是'[]'包裹for loop和if statements
+# 生成器和生成器表达式是创建迭代器的有效方式
 
 def generate_numbers(min_value, max_value):
     while min_value <= max_value:
@@ -107,11 +109,14 @@ numbers = generate_numbers(1, 5)
 type(numbers)
 
 for num in numbers:
-    print(num)        
-
-list(generate_numbers(1, 10))
+    print(num)
 
 next(numbers)
 
 
+numbers = [1, 2, 3, 4, 5, 6]
+even_nums = (x for x in numbers if x % 2 == 0)
+type(even_nums)
 
+for num in even_nums:
+    print(num)
