@@ -10,7 +10,5 @@
         "**/.DS_Store": true,
         "**/*.pyc": {"when": "$(basename).py"}, 
         "**/__pycache__": true
-    },
-    "terminal.integrated.fontSize": 13,
-    "editor.fontSize": 13
+    }
 }
