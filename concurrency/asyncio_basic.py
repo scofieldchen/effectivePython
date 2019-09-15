@@ -1,5 +1,5 @@
 """
-异步初步
+异步(asyncio)
 
 https://realpython.com/async-io-python/
 """
