@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": "/home/scofield/anaconda3/bin/python",
+    "python.pythonPath": "/home/scofield/anaconda3/envs/quant/bin/python",
     "python.linting.pylintEnabled": true,
     "python.linting.enabled": true,
     "files.exclude":{
