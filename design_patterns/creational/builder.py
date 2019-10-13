@@ -1,91 +1,101 @@
 """
 builder pattern(建造者模式)
 
-参考：
 https://sourcemaking.com/design_patterns/builder
 https://blog.csdn.net/shudaqi2010/article/details/53965917
 
 什么是建造者模式?
 
-考虑餐厅经营的情形，客户点了3份菜，随后点餐员将指令传达给不同的厨师，准备完毕后
-把3份菜依次端给客户。这就是建造者模式的工作原理，涉及到两个概念：“建造者(builder)”和
-“指挥者(director)”，建造者创建具体的产品(解决特定问题)，“指挥者”根据外部参数“指挥”建造者。
-在上述案例中，点餐员充当“指挥者”的角色，厨师则是具体的“建造者”。
+将创建复杂对象的过程和具体实现相分离。考虑造车的情形，车辆是非常复杂的产品，包含发动机，底盘，
+风向盘和座椅等元素，不同车型的配件又完全不同，为了有效的生产，需要将造车的过程分而治之，使用
+不同的车间造对应的零件，有一个“指挥”中心负责安排生产。
+
+建造者模式设计两个概念：“建造者(builder)”和“指挥者(director)”，前者负责创建具体的产品，后者
+根据外部参数“指挥”建造者。最终目标是返回一个复杂的对象。
 
 建造者模式和工厂模式的区别是什么？
 
-工厂模式提供统一的接口创建“产品”，目的是返回对象实例，建造者模式直接使用“产品”，即调用
-返回对象的方法。
+两种模式的共同点是提供了统一的接口，不同之处在于，工厂模式“一次性”的返回对象，但建造者模式
+必须逐步构建对象，最终返回产品。
 """
 
 import abc
 
 
-class VehicleBuilder(metaclass=abc.ABCMeta):
-    """抽象的汽车建造者"""
+class Vehicle(object):
+    """汽车：复杂的产品"""
 
     def __init__(self):
         self.doors = 0
         self.seats = 0
         self.horse_power = 0
 
+    def display(self):
+        print("horse power = %d" % self.horse_power)
+        print("doors = %d" % self.doors)
+        print("seats = %d" % self.seats)
+
+
+class VehicleBuilder(metaclass=abc.ABCMeta):
+    """抽象的汽车建造者"""
+
+    def __init__(self):
+        self.vehicle = Vehicle()
+
     @abc.abstractmethod
     def build_engine(self):
-        pass
+        return
 
     @abc.abstractmethod
     def build_doors(self):
-        pass
+        return
 
     @abc.abstractmethod
     def build_seats(self):
-        pass
+        return
 
 
 class CarBuilder(VehicleBuilder):
     """具体的汽车建造者"""
 
     def build_engine(self):
-        self.horse_power = 300
+        self.vehicle.horse_power = 300
 
     def build_doors(self):
-        self.doors = 4
+        self.vehicle.doors = 4
 
     def build_seats(self):
-        self.seats = 5
+        self.vehicle.seats = 5
 
 
 class BikeBuilder(VehicleBuilder):
     """具体的单车建造者"""
 
     def build_engine(self):
-        self.horse_power = 50
+        self.vehicle.horse_power = 50
 
     def build_doors(self):
-        self.doors = 0
+        self.vehicle.doors = 0
 
     def build_seats(self):
-        self.seats = 1
+        self.vehicle.seats = 1
 
 
 class VehicleManufacturer(object):
-    """制造汽车的‘指挥者(director)’"""
+    """制造汽车的指挥者(director)"""
 
     def __init__(self):
-        # 创建'builder'的方式很多，通常在类方法中实现
         self.builder = None
 
     def build(self):
+        # 逐步构建“汽车”这个复杂的产品，最终返回对象实例
         if self.builder is None:
             raise Exception("builder not found")
         self.builder.build_engine()
         self.builder.build_doors()
         self.builder.build_seats()
 
-        print("vehicle detail:")
-        print("horse power = %d" % self.builder.horse_power)
-        print("doors = %d" % self.builder.doors)
-        print("seats = %d" % self.builder.seats)
+        return self.builder.vehicle
         
 
 if __name__ == "__main__":
@@ -93,7 +103,9 @@ if __name__ == "__main__":
     manufacturer = VehicleManufacturer()
 
     manufacturer.builder = CarBuilder()
-    manufacturer.build()
+    car = manufacturer.build()
+    car.display()
 
     manufacturer.builder = BikeBuilder()
-    manufacturer.build()
+    bike = manufacturer.build()
+    bike.display()
