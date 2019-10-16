@@ -6,14 +6,15 @@
 或者'client=ccxt.okex'，返回的对象又提供相同的方法。这种设计模式隐藏了具体对象，
 客户端程序通过调用统一的接口来实现想要的内容，好处在于代码容易维护和拓展。
 
-教程：
 https://realpython.com/factory-method-python/
 https://python-3-patterns-idioms-test.readthedocs.io/en/latest/Factory.html
 
 工厂模式涉及3个概念：product, creator, client
-1. product: 一个工厂包含很多'产品'，代表了解决问题的多种具体实现方法
-2. creator: 根据客户端提供的参数返回具体的对象
-3. client: 调用统一接口的客户端程序
+1. product: 一个工厂包含很多'产品'，代表了解决问题的多种方式，具体的实现可以是
+    创建自定义对象，函数或类方法。
+2. creator: 根据参数返回具体'产品'，具体实现可以是自定义类，函数或类方法，在简单
+    工厂模式下，一个函数或类方法已经满足需求。
+3. client: 客户端程序，通过调用统一的接口返回具体的'产品'。
 
 使用场景：
 1. 替换复杂的逻辑判断(if-elif-else)
