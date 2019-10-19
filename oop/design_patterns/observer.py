@@ -1,8 +1,8 @@
 """
 观察者模式(observer pattern)
 
-先创建一个核心对象，包含某些重要数据，然后创建一个或多个观察者对象，“观察”核心对象，
-一旦数据发生变更，观察者对象可以把信息输出到控制台，日志文件，数据库或远程终端。
+创建一组观察者对象，“观察”核心对象的状态，当核心对象的某个属性发生变化时，
+观察者对象会把信息打印到控制台，写入日志或数据库等。
 
 观察者模式通常用于备份系统。
 """
@@ -15,8 +15,8 @@ class Subject:
     """被‘观察’的核心对象，维护重要数据"""
 
     def __init__(self):
-        self._observers = []
-        self._data = 0
+        self._observers = []  # 观察者集合
+        self._data = 0  # 核心数据
 
     @property
     def data(self):
@@ -46,7 +46,7 @@ class ConsoleObserver:
     输出信息至控制台"""
 
     def __init__(self, subject):
-        self.subject = subject
+        self.subject = subject  # 将核心对象的实例作为参数
 
     def __call__(self):
         print("subject.data ==> %d" % self.subject.data)
