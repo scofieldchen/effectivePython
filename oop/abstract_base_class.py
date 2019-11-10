@@ -44,7 +44,7 @@ class Truck(Vehicle):
 
 
 try:
-    v = Vehicle()  # 抽象基类只提供接口，本身不可实例化
+    v = Vehicle()  # 抽象基类只定义接口，本身不可实例化
 except Exception as e:
     print(e)
 
