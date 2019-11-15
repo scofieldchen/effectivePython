@@ -1,11 +1,10 @@
 """
 异步核心概念
 
-https://stackabuse.com/overview-of-async-io-in-python-3-7/
 https://cheat.readthedocs.io/en/latest/python/asyncio.html
-https://realpython.com/async-io-python/
-https://medium.com/@pekelny/weird-python-coroutines-643c7a70f14c
 https://medium.com/python-pandemonium/asyncio-coroutine-patterns-beyond-await-a6121486656f
+https://medium.com/@yeraydiazdiaz/asyncio-coroutine-patterns-errors-and-cancellation-3bb422e961ff
+https://hackernoon.com/asyncio-for-the-working-python-developer-5c468e6e2e8e
 
 1. 阻塞 vs 非阻塞IO
 
