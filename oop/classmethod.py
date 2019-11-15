@@ -1,14 +1,14 @@
 """
-@classmethod: 装饰器
+用classmethod实现新的构造器
 
-类方法接受默认参数cls，指向class本身。
+类的构造方法默认使用__init__，有时候希望用多种方式创建实例，classmethod
+能实现这一点，它接收一个默认参数'cls'，指向类本身。
 
-classmethod的一个用途是充当构造器，可以在类方法
-内部构造并返回该对象的实例。
+classmethod会在底层调用__init__，创建新的实例。
 """
 
 class Student:
-    """代表现实的学生对象"""
+    """代表学生的对象"""
 
     def __init__(self, name):
         self.name = name
@@ -17,7 +17,8 @@ class Student:
         return "Student(%s)" % self.name
 
     @classmethod
-    def tom(cls):  # classmethod的第一个参数默认写cls，指向Student Class
+    def tom(cls):
+        """cls参数指向类本身，在底层调用__init__创建实例"""
         return cls(name="Tom")
     
     @classmethod
