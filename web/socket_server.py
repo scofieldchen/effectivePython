@@ -12,7 +12,6 @@ with socket.socket() as s:
         conn, addr = s.accept()  # 阻塞直到有客户端连接
         with conn:
             print("get connection from %s" % str(addr))
-            for i in range(10):
-                msg = "num(%d)" % i
-                conn.sendall(msg.encode("utf8"))
-                time.sleep(1)
+            while True:
+                msg = conn.recv(1024)
+                print(msg)
