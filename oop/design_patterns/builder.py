@@ -1,29 +1,37 @@
 """
-builder pattern(建造者模式)
+建造者模式(Builder Pattern)
 
 https://sourcemaking.com/design_patterns/builder
-https://blog.csdn.net/shudaqi2010/article/details/53965917
+https://mozillazg.com/2016/08/python-builder-pattern.html
 
-什么是建造者模式?
+如何理解建造者模式？
 
-将创建复杂对象的过程和具体实现相分离。考虑造车的情形，车辆是非常复杂的产品，包含发动机，底盘，
-风向盘和座椅等元素，不同车型的配件又完全不同，为了有效的生产，需要将造车的过程分而治之，使用
-不同的车间造对应的零件，有一个“指挥”中心负责安排生产。
+建造者模式的核心思想是将创建复杂对象的过程与对象的具体表现相分离。
 
-建造者模式设计两个概念：“建造者(builder)”和“指挥者(director)”，前者负责创建具体的产品，后者
-根据外部参数“指挥”建造者。最终目标是返回一个复杂的对象。
+以创建网页表单为例，网页表单有很多种表现形式，包含不同类型的字段和样式。首先创建builder对象，
+提供公共接口来设置字段，然后创建director对象，接收外部参数逐步构建表单，构建过程要调用builder
+提供的接口，最终返回表单对象的实例。
 
-建造者模式和工厂模式的区别是什么？
+如何实现建造者模式？
 
-两种模式的共同点是提供了统一的接口，不同之处在于，工厂模式“一次性”的返回对象，但建造者模式
-必须逐步构建对象，最终返回产品。
+通用实现模式要创建3个对象：
+
+1. product: 具体的产品
+2. builder: 建造者，提供共同接口来创建产品，将product作为属性
+3. director: 指挥者，根据外部参数来构建产品，实例化builder对象作为属性，调用
+    builder提供的接口来创建具体的产品
+
+建造者模式和工厂模式有什么区别？
+
+两种模式的共同点是提供了创建产品的统一接口，不同点是工厂模式“一次性”的返回对象，
+但建造者模式必须根据外部参数逐步构建，最终返回复杂的对象。
 """
 
 import abc
 
 
 class Vehicle(object):
-    """汽车：复杂的产品"""
+    """具体产品"""
 
     def __init__(self):
         self.doors = 0
@@ -37,7 +45,7 @@ class Vehicle(object):
 
 
 class VehicleBuilder(metaclass=abc.ABCMeta):
-    """抽象的汽车建造者"""
+    """抽象的建造者"""
 
     def __init__(self):
         self.vehicle = Vehicle()
@@ -88,7 +96,6 @@ class VehicleManufacturer(object):
         self.builder = None
 
     def build(self):
-        # 逐步构建“汽车”这个复杂的产品，最终返回对象实例
         if self.builder is None:
             raise Exception("builder not found")
         self.builder.build_engine()
@@ -100,8 +107,10 @@ class VehicleManufacturer(object):
 
 if __name__ == "__main__":
 
+    # 创建指挥者
     manufacturer = VehicleManufacturer()
 
+    # 为指挥者设定具体的builder，开始构建
     manufacturer.builder = CarBuilder()
     car = manufacturer.build()
     car.display()
