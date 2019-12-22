@@ -1,21 +1,8 @@
 """
-如果要创建Thread对象的子类，必须重写run()方法，才能调用worker函数。
+继承threading.Thread类，创建线程子类，实现线程执行完毕后返回结果的功能。
 """
 
 from threading import Thread
-import logging
-
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(threadName)s - %(message)s"
-)
-
-
-class MyThread(Thread):
-    """最简单的继承"""
-    def run(self):
-        logging.info("running")
 
 
 class ThreadWithReturnValue(Thread):
@@ -41,10 +28,8 @@ def worker(x):
 
 if __name__ == "__main__":
 
-    #t = MyThread()
-    #t.start()
-
-    t = ThreadWithReturnValue(name="myThread", target=worker, args=("king",))
+    t = ThreadWithReturnValue(target=worker, args=("this is result",))
     t.start()
+    
     res = t.join()
-    logging.info(res)
+    print(res)  # 应该打印'this is result'
