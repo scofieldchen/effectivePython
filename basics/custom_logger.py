@@ -38,39 +38,70 @@ from logging.handlers import TimedRotatingFileHandler
 # logger.addHandler(handler_file)
 
 
-def setup_logger(name, to_console=True, to_file=True, filename=None):
-    """设置日志系统"""
-    logger = logging.getLogger(name)
-    logger.setLevel(logging.DEBUG)
+class CustomLogger:
+    """便捷自定义logger
 
-    format_str = "%(asctime)s-%(threadName)s-%(levelname)s-%(message)s"
-    formatter = logging.Formatter(format_str)
-
-    if to_console:
-        handler_console = logging.StreamHandler()
-        handler_console.setLevel(logging.INFO)
-        handler_console.setFormatter(formatter)
-        logger.addHandler(handler_console)
-
-    if to_file and filename is not None:
-        handler_file = TimedRotatingFileHandler(filename, when="midnight")
-        handler_file.setLevel(logging.INFO)
-        handler_file.setFormatter(formatter)
-        logger.addHandler(handler_file)
+    根据参数创建至多两个句柄: 控制台句柄和文件句柄，后者默认会根据时间滚动，
+    默认在本地时间午夜自动创建新日志文件。
     
-    return logger
+    Attributes:
+        name(str): logger名字，建议使用当前模块的名字(__name__)
+        to_console(bool): 是否把信息输出到控制台
+        to_file(bool): 是否把信息输出到日志文件
+        filename(str): 日志文件名称，务必先创建存储文件的文件夹
+        level_console: 输出到控制台的日志信息的紧急程度
+        level_file: 输出到文件的日志信息的紧急程度
+        format_console: 输出到控制台的信息的格式
+        format_file: 输出到日志文件的信息的格式
+    """
+    def __init__(self, name, to_console=True, to_file=False,
+                 filename=None, level_console=logging.INFO,
+                 level_file=logging.WARNING, format_console=None,
+                 format_file=None):
+        self.to_console = to_console
+        self.to_file = to_file
+        self.filename = filename
+        self.level_console = level_console
+        self.level_file = level_file
+        self.format_console = format_console
+        self.format_file = format_file
+
+        self.logger = logging.getLogger(name)
+        # 必须将logger的level设成最低级，才能为不同的handlers设置不同级别的level
+        self.logger.setLevel(logging.DEBUG)
+
+    def _get_console_formatter(self):
+        if self.format_console is None:
+            self.format_console = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        return logging.Formatter(self.format_console)
+
+    def _get_file_formatter(self):
+        if self.format_file is None:
+            self.format_file = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        return logging.Formatter(self.format_file)
+
+    def _add_console_handler(self):
+        handler = logging.StreamHandler()
+        handler.setLevel(self.level_console)
+        handler.setFormatter(self._get_console_formatter())
+        self.logger.addHandler(handler)
+
+    def _add_file_handler(self):
+        if self.filename is None:
+            raise Exception("Filename missing when setting FileHandler for logger")
+        handler = TimedRotatingFileHandler(self.filename, when="midnight")
+        handler.setLevel(self.level_file)
+        handler.setFormatter(self._get_file_formatter())
+        self.logger.addHandler(handler)
+
+    def get_logger(self):
+        if self.to_console:
+            self._add_console_handler()
+        if self.to_file:
+            self._add_file_handler()
+        return self.logger
 
 
 if __name__ == "__main__":
-    logger = setup_logger(
-        name="test",
-        to_console=True,
-        to_file=True,
-        filename="test.log"
-    )
-
-    cnt = 0
-    while cnt < 20:
-        logger.info("test logging")
-        cnt += 1
-        time.sleep(1)
+    logger = CustomLogger(__name__).get_logger()
+    logger.info("log some information")
