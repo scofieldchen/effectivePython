@@ -1,11 +1,13 @@
 """
-当序列(list,set,str)包含重复出现的元素，有时想统计它们的频率(count/frequency),
-这在数据分析中处理分类变量时尤其有用，可使用collections.Counter对象。
+使用collections.Counter统计序列(list,str)中重复出现元素的频数。
 """
 
 from collections import Counter
 
-s = [
+
+## 统计列表元素重复出现的次数
+
+words_list = [
     "A", "A", "A",
     "B", "B",
     "C", "C", "C", "C",
@@ -14,20 +16,28 @@ s = [
 ]
 
 # 创建Counter实例，自动把输入序列映射为"item":"count"格式
-word_counts = Counter(s)
-print(word_counts)
+word_counter = Counter(words_list)
+print(word_counter)
 
-# 调用most_common方法，输出出现次数最多的元素
-top_two = word_counts.most_common(2)
-print(top_two)
+# 调用most_common()，返回出现次数最多的元素
+print(word_counter.most_common(2))
 
 # Counter实例本质上是字典，可根据key找到对应频数
-word_counts["A"]
+print(word_counter["A"])
 
 # 若查找不存在的key，输出零而不会报错
-word_counts["F"]
+print(word_counter["F"])
 
 # Counter支持更新频数统计表
 more_words = ["A", "B", "E"]
-word_counts.update(more_words)
-print(word_counts)
+word_counter.update(more_words)
+print(word_counter)
+
+
+## 字符串
+
+words = "acacadwadeqamkaicvanjnadca"
+words_counter = Counter(words)
+print(words_counter)
+print(words_counter.most_common(2))
+print(words_counter["a"])
