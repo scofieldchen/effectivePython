@@ -1,15 +1,19 @@
 """
 用schedule运行定时任务
+
+1. 定义任务函数
+2. 决定定期运行的时间
+3. 运行所有待定任务
 """
 
-import schedule
-import time
 import logging
+import time
+
+import schedule
 
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S"
+    format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
 
@@ -35,6 +39,7 @@ schedule.every(5).seconds.do(job, num=1)
 
 # 每周三下午3点运行一次任务
 # schedule.every().wednesday.at("15:00:00").do(job)
+
 
 while True:
     schedule.run_pending()  # 运行所有设定任务
