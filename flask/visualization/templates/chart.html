@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<header>
+    <title>数据可视化</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {{ bootstrap.load_css() }}
+    {{ bootstrap.load_js() }}
+    <!-- bokeh-->
+    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-1.4.0.min.js"></script>
+    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-1.4.0.min.js"></script>
+    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-1.4.0.min.js"></script>
+</header>
+<body>
+    {% from 'bootstrap/form.html' import render_form %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-3">
+                <h1>数据可视化</h1>
+                <form action="/chart" method="post">
+                    {{ render_form(form) }}
+                </form>
+            </div>
+            <div class="col-9">
+                {{ script | safe }}
+                {{ div | safe }}
+            </div>
+        </div>
+    </div>
+</body>
