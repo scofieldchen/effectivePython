@@ -31,8 +31,7 @@ async def main(url):
 
 
 if __name__ == "__main__":
-    # url = "ws://127.0.0.1:8000/ws"
-    url = "ws://47.75.76.103:55558/ws/orderbook"
+    url = "ws://127.0.0.1:8000/ws"
     loop = asyncio.get_event_loop()
     try:
         loop.run_until_complete(main(url))
